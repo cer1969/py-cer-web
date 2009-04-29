@@ -38,10 +38,10 @@ class Page(object):
     
     def select(self, tables, where="", params=[], orderby=""):
         sel = ", ".join([x.strip() + ".*" for x in tables.split(",")]) 
-        whe = " and ".join([x.strip() for x in where.split(",")])
-        whe = ("where " + whe) if whe != "" else ""
+        whe = ("where " + where) if where != "" else ""
         oby = ("order by " + orderby) if orderby != "" else ""
         query = "select %s from %s %s %s" % (sel, tables, whe, oby)
+        #print query
         return self.fetch(query, params)
     
     def getCookie(self, name, default=None):
