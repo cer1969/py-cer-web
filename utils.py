@@ -7,8 +7,9 @@ import simplejson
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'json', 'WebException', 'LookupException', 'AuthException', 
-           'AuthUserException', 'AuthConditionException', 'record_factory']
+__all__ = ['lookup', 'check_conditions', 'json', 'WebException', 'LookupException', 
+           'AuthException', 'AuthUserException', 'AuthConditionException',
+           'record_factory']
 
 #-----------------------------------------------------------------------------------------
 
@@ -54,6 +55,17 @@ class _MakoLookup(object):
 # lookup: _MakoLookup instance
 
 lookup = _MakoLookup()
+
+#-----------------------------------------------------------------------------------------
+# check conditions
+
+def check_conditions(user, conditions):
+    """user and conditions must be implemented by developers
+    """
+    for func in conditions:
+        if not func(user):
+            return False
+    return True
 
 #-----------------------------------------------------------------------------------------
 # simplejson

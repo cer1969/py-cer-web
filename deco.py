@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
+import cherrypy
 import utils
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['AbstractDecorator', 'Auth', 'Template']
+__all__ = ['AbstractDecorator', 'Auth', 'Template', 'Expose']
 
 #-----------------------------------------------------------------------------------------
 
@@ -24,16 +25,7 @@ class AbstractDecorator(object):
         wrapper.__name__ = func.__name__
         return wrapper
 
-
 #-----------------------------------------------------------------------------------------
-
-def _check_conditions(user, conditions):
-    """user and conditions must be implemented by developers
-    """
-    for func in conditions:
-        if not func(user):
-            return False
-    return True
 
 class Auth(AbstractDecorator):
     """ Decorator for user authentication
@@ -57,7 +49,7 @@ class Auth(AbstractDecorator):
             if not isinstance(conds, list):
                 conds = []
             
-            if not _check_conditions(obj.user, conds):
+            if not utils.check_conditions(obj.user, conds):
                 raise utils.AuthConditionException("Condition failed")
             
             return func(obj, *args, **kwargs)
@@ -80,6 +72,7 @@ class Template(AbstractDecorator):
     
     def getWrapper(self, func):
         def wrapper(obj, *args, **kwargs):
+            print u"Deprecated web.Template en %s" % obj.path_info
             try:
                 result = func(obj, *args, **kwargs)
                 result = result if isinstance(result, dict) else {}
@@ -94,4 +87,42 @@ class Template(AbstractDecorator):
                 print e
         
         wrapper.exposed = self._exposed
+        return wrapper
+
+#-----------------------------------------------------------------------------------------
+
+class Expose(AbstractDecorator):
+    """ Decorator for exposing content and optional rendering using template
+        The instance with de decorated method must have a 'path_info' attribute if
+        a template is needed.
+        Templates for 'login' and 'role_error' requiered for user auth.
+    """
+    
+    def __init__(self, uri=None, verbs=["GET"], **kwa):
+        AbstractDecorator.__init__(self)
+        self._uri = uri
+        self._kwa = kwa
+        self._verbs = verbs
+    
+    def getWrapper(self, func):
+        def wrapper(obj, *args, **kwargs):
+            if not(cherrypy.request.method in self._verbs):
+                print u"%s Error de método: %s" % (obj.path_info, cherrypy.request.method)
+                return utils.lookup.render("basic_error", page=obj)
+            try:
+                result = func(obj, *args, **kwargs)
+                if not isinstance(result, dict):
+                    return result
+                result.update(self._kwa)
+                uri = obj.path_info if (self._uri is None) else self._uri
+                return utils.lookup.render(uri, **result)
+            except utils.AuthUserException:
+                return utils.lookup.render("login", page=obj)
+            except utils.AuthConditionException:
+                return utils.lookup.render("role_error", page=obj)
+            except Exception, e:
+                print u"%s Error: %s" % (obj.path_info, e)
+                return utils.lookup.render("basic_error", page=obj)
+        
+        wrapper.exposed = True
         return wrapper
