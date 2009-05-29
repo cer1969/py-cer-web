@@ -10,7 +10,7 @@ __all__ = ['Page']
 
 #-----------------------------------------------------------------------------------------
 
-SESSION_GLOBAL_USER_KEY = "_global_session_user"
+SESSION_GLOBAL_USER = "_session_global_user"
 
 class Page(object):
     """ Abstract base class for page handlers
@@ -41,11 +41,30 @@ class Page(object):
     
     path_info = property(getPathInfo)
     
+    def setSession(self, key, value):
+        # Graba información de sessión global
+        cherrypy.session[key] = value
+    
+    def getSession(self, key, default=None):
+        # Recupera información de sessión global
+        return cherrypy.session.get(key, default)
+    
+    def setPageData(self, key, value):
+        # Graba información de sessión asociada a esta página
+        gs = self.getSession(self.url, {})
+        gs[key] = value
+        self.setSession(self.url, gs)
+    
+    def getPageData(self, key, default=None):
+        # Recupera información de sessión asociada a esta página
+        gs = self.getSession(self.url, {})
+        return gs.get(key, default)
+    
     def setUser(self, user):
-        cherrypy.session[SESSION_GLOBAL_USER_KEY] = user
+        self.setSession(SESSION_GLOBAL_USER, user)
     
     def getUser(self):
-        return cherrypy.session.get(SESSION_GLOBAL_USER_KEY, None)
+        return self.getSession(SESSION_GLOBAL_USER)
     
     user = property(getUser, setUser)
     
