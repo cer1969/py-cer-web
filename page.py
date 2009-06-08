@@ -20,8 +20,23 @@ class Page(object):
     def __init__(self, url="/"):
         self.url = url
     
+    def _getPathInfo(self):
+        return cherrypy.request.path_info
+    
+    path_info = property(_getPathInfo)
+    
+    def _setUser(self, user):
+        # Set current user
+        self.setSession(SESSION_GLOBAL_USER, user)
+    
+    def _getUser(self):
+        # Get current user
+        return self.getSession(SESSION_GLOBAL_USER)
+    
+    user = property(_getUser, _setUser)
+    
     #-------------------------------------------------------------------------------------
-    # Cherrypy Methods
+    # Cookies and Sessions
     
     def getCookie(self, name, default=None):
         cook = cherrypy.request.cookie.get(name)
@@ -35,11 +50,6 @@ class Page(object):
             cook[name]['max-age'] = maxage
         url = self.url if (url is None) else url
         cook[name]['path'] = url
-    
-    def getPathInfo(self):
-        return cherrypy.request.path_info
-    
-    path_info = property(getPathInfo)
     
     def setSession(self, key, value):
         # Graba información de sessión global
@@ -60,32 +70,30 @@ class Page(object):
         gs = self.getSession(self.url, {})
         return gs.get(key, default)
     
-    def setUser(self, user):
-        self.setSession(SESSION_GLOBAL_USER, user)
-    
-    def getUser(self):
-        return self.getSession(SESSION_GLOBAL_USER)
-    
-    user = property(getUser, setUser)
-    
     #-------------------------------------------------------------------------------------
-    # Database Methods
+    # Database
     
     def execute(self, query, parameters=[]):
         db = cherrypy.thread_data.db
         cur = db.cursor()
         cur.execute(query, parameters)
-        return cur.lastrowid
-
+        #return cur.lastrowid
+        idx = cur.lastrowid
+        cur.close()
+        return idx
+    
     def commit(self):
         db = cherrypy.thread_data.db
         db.commit()
-        
+    
     def fetch(self, query, parameters=[]):
         db = cherrypy.thread_data.db
         cur = db.cursor()
         cur.execute(query, parameters)
-        return cur.fetchall()
+        #return cur.fetchall()
+        Q = cur.fetchall()
+        cur.close()
+        return Q
     
     def select(self, tables, where="", params=[], orderby=""):
         sel = ", ".join([x.strip() + ".*" for x in tables.split(",")]) 
