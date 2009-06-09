@@ -77,7 +77,6 @@ class Page(object):
         db = cherrypy.thread_data.db
         cur = db.cursor()
         cur.execute(query, parameters)
-        #return cur.lastrowid
         idx = cur.lastrowid
         cur.close()
         return idx
@@ -86,11 +85,15 @@ class Page(object):
         db = cherrypy.thread_data.db
         db.commit()
     
-    def fetch(self, query, parameters=[]):
+    def fetch(self, query, params=[], where="", orderby=""):
+        whe = ("where %s" % where) if (where != "") else ""
+        oby = ("order by %s" % orderby) if (orderby != "") else ""
+        optQuery = " %s %s " % (whe, oby)
+        query = query + optQuery
+        
         db = cherrypy.thread_data.db
         cur = db.cursor()
-        cur.execute(query, parameters)
-        #return cur.fetchall()
+        cur.execute(query, params)
         Q = cur.fetchall()
         cur.close()
         return Q
