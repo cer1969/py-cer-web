@@ -14,7 +14,6 @@ SESSION_GLOBAL_USER = "_session_global_user"
 
 class Page(object):
     """ Abstract base class for page handlers
-        Optional in derived classes: conditions
     """
     
     def __init__(self, url="/"):
