@@ -3,7 +3,10 @@
 
 from mako import exceptions
 from mako.lookup import TemplateLookup
-import simplejson
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 #-----------------------------------------------------------------------------------------
 
@@ -70,8 +73,8 @@ def check_conditions(user, conditions):
 #-----------------------------------------------------------------------------------------
 # simplejson
 
-def json(**kwargs):
-    return simplejson.dumps(kwargs)
+def tojson(**kwargs):
+    return json.dumps(kwargs)
 
 #-----------------------------------------------------------------------------------------
 # Record factory for sqlite3
