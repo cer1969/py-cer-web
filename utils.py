@@ -10,7 +10,7 @@ except ImportError:
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'check_conditions', 'json', 'WebException', 'LookupException', 
+__all__ = ['lookup', 'check_conditions', 'tojson', 'WebException', 'LookupException', 
            'AuthException', 'AuthUserException', 'AuthConditionException',
            'record_factory']
 
