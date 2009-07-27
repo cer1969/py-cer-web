@@ -6,7 +6,8 @@ import utils
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['AbstractDecorator', 'Auth', 'Template', 'Expose', 'ExposeOld']
+__all__ = ['AbstractDecorator', 'Expose', 'FxExpose', 
+           'Auth', 'Template', 'ExposeOld']
 
 #-----------------------------------------------------------------------------------------
 
@@ -39,6 +40,7 @@ class Auth(AbstractDecorator):
     
     def getWrapper(self, func):
         def wrapper(obj, *args, **kwargs):
+            print u"Deprecated web.Auth en %s" % obj.path_info
             if obj.user is None:
                 raise utils.AuthUserException("User is None!")
             
@@ -181,6 +183,54 @@ class Expose(AbstractDecorator):
             except Exception, e:
                 print u"%s Error: %s" % (obj.path_info, e)
                 return utils.lookup.render("basic_error", page=obj)
+        
+        wrapper.exposed = True
+        return wrapper
+
+#-----------------------------------------------------------------------------------------
+
+class FxExpose(AbstractDecorator):
+    """ Decorator for exposing content, optional authentication.
+        The instance with de decorated method must have:
+        - Attributes: user and path_info
+    """
+    
+    def __init__(self, verbs="GET", auth=None):
+        AbstractDecorator.__init__(self)
+        
+        self._verbs = [x.strip().upper() for x in verbs.split(",")]
+        
+        self._authreq = False if (auth is None) else True
+        self._conds = []
+        
+        if self._authreq:
+            if isinstance(auth, list):
+                self._conds = auth
+            else:
+                self._conds.append(auth)
+    
+    def getWrapper(self, func):
+        def wrapper(obj, *args, **kwargs):
+            
+            # verbs check
+            if not(cherrypy.request.method in self._verbs):
+                print u"%s Error de método: %s" % (obj.path_info, cherrypy.request.method)
+                return utils.tojson(dict(status=False, error="verb"))
+            
+            # auth check
+            if self._authreq:
+                if obj.user is None:
+                    return utils.tojson(dict(status=False, error="login"))
+                
+                if not utils.check_conditions(obj.user, self._conds):
+                    return utils.tojson(dict(status=False, error="role"))
+            
+            try:
+                result = func(obj, *args, **kwargs)
+                return result
+            except Exception, e:
+                print u"%s Error: %s" % (obj.path_info, e)
+                return utils.tojson(dict(status=False, error="method"))
         
         wrapper.exposed = True
         return wrapper
