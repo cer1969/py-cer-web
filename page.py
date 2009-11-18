@@ -33,6 +33,11 @@ class Page(object):
     
     user = property(_getUser, _setUser)
     
+    def _getDb(self):
+        return cherrypy.thread_data.db
+    
+    db = property(_getDb)
+    
     #-------------------------------------------------------------------------------------
     # Cookies and Sessions
     
@@ -67,38 +72,3 @@ class Page(object):
         # Recupera información de sessión asociada a esta página
         gs = self.getSession(self.url, {})
         return gs.get(key, default)
-    
-    #-------------------------------------------------------------------------------------
-    # Database
-    
-    def execute(self, query, parameters=[]):
-        db = cherrypy.thread_data.db
-        cur = db.cursor()
-        cur.execute(query, parameters)
-        idx = cur.lastrowid
-        cur.close()
-        return idx
-    
-    def commit(self):
-        db = cherrypy.thread_data.db
-        db.commit()
-    
-    def fetch(self, query, params=[], where="", orderby=""):
-        whe = ("where %s" % where) if (where != "") else ""
-        oby = ("order by %s" % orderby) if (orderby != "") else ""
-        optQuery = " %s %s " % (whe, oby)
-        query = query + optQuery
-        
-        db = cherrypy.thread_data.db
-        cur = db.cursor()
-        cur.execute(query, params)
-        Q = cur.fetchall()
-        cur.close()
-        return Q
-    
-    def select(self, tables, where="", params=[], orderby=""):
-        sel = ", ".join([x.strip() + ".*" for x in tables.split(",")]) 
-        whe = ("where " + where) if where != "" else ""
-        oby = ("order by " + orderby) if orderby != "" else ""
-        query = "select %s from %s %s %s" % (sel, tables, whe, oby)
-        return self.fetch(query, params)

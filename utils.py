@@ -10,9 +10,7 @@ except ImportError:
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'check_conditions', 'tojson', 'WebException', 'LookupException', 
-           'AuthException', 'AuthUserException', 'AuthConditionException',
-           'record_factory']
+__all__ = ['lookup', 'check_conditions', 'tojson']
 
 #-----------------------------------------------------------------------------------------
 
@@ -42,7 +40,7 @@ class _MakoLookup(object):
         """ Function for templates renderign
         """
         if self._lookup is None:
-            raise LookupException("Lookup is not configured!")
+            raise Exception("Lookup is not configured!")
         
         uri = _get_uri(uri) + ".tpl"
         
@@ -75,39 +73,3 @@ def check_conditions(user, conditions):
 
 def tojson(**kwargs):
     return json.dumps(kwargs)
-
-#-----------------------------------------------------------------------------------------
-# Record factory for sqlite3
-
-class _Record(dict):
-    def __init__(self, names, values):
-        dict.__init__(self, zip(names, values))
-    def __getattr__(self, name):
-        return self[name]
-
-def record_factory(cursor, row):
-    names = [x[0] for x in cursor.description]
-    return _Record(names, row)
-
-#-----------------------------------------------------------------------------------------
-# Exceptions
-
-class WebException(Exception):
-    """ Standard exception for cerweb """
-    pass
-
-class LookupException(WebException):
-    """ Exception for lookup """
-    pass
-
-class AuthException(WebException):
-    """ Authentication Exception """
-    pass
-
-class AuthUserException(AuthException):
-    """ User Authentication Exception """
-    pass
-
-class AuthConditionException(AuthException):
-    """ Condition Authentication Exception """
-    pass
