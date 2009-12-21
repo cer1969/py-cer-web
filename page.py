@@ -21,7 +21,7 @@ class Page(object):
     def _getPathInfo(self):
         return cherrypy.request.path_info
     
-    path_info = property(_getPathInfo)
+    pathInfo = property(_getPathInfo)
     
     def _setUser(self, user):
         # Set current user

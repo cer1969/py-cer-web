@@ -10,11 +10,11 @@ except ImportError:
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'check_conditions', 'tojson']
+__all__ = ['lookup', 'checkConditions', 'toJson']
 
 #-----------------------------------------------------------------------------------------
 
-def _get_uri(uri):
+def _getUri(uri):
     if uri.endswith("/"):
         uri = uri + "index"
     return uri
@@ -42,7 +42,7 @@ class _MakoLookup(object):
         if self._lookup is None:
             raise Exception("Lookup is not configured!")
         
-        uri = _get_uri(uri) + ".tpl"
+        uri = _getUri(uri) + ".tpl"
         
         try:
             tpl = self._lookup.get_template(uri)
@@ -60,7 +60,7 @@ lookup = _MakoLookup()
 #-----------------------------------------------------------------------------------------
 # check conditions
 
-def check_conditions(user, conditions):
+def checkConditions(user, conditions):
     """user and conditions must be implemented by developers
     """
     for func in conditions:
@@ -71,5 +71,5 @@ def check_conditions(user, conditions):
 #-----------------------------------------------------------------------------------------
 # simplejson
 
-def tojson(**kwargs):
+def toJson(**kwargs):
     return json.dumps(kwargs)

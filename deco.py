@@ -31,7 +31,7 @@ class Expose(AbstractDecorator):
     """ Decorator for exposing content, optional rendering using template and
         optional authentication.
         The instance with de decorated method must have:
-        - Attributes: user and path_info
+        - Attributes: user and pathInfo
         - Templates: basic_error, login and role_error
     """
     
@@ -57,7 +57,7 @@ class Expose(AbstractDecorator):
             
             # verbs check
             if not(cherrypy.request.method in self._verbs):
-                print u"%s Error de método: %s" % (obj.path_info, cherrypy.request.method)
+                print u"%s Error de método: %s" % (obj.pathInfo, cherrypy.request.method)
                 return utils.lookup.render("basic_error", page=obj)
             
             # auth check
@@ -65,7 +65,7 @@ class Expose(AbstractDecorator):
                 if obj.user is None:
                     return utils.lookup.render("login", page=obj)
                 
-                if not utils.check_conditions(obj.user, self._conds):
+                if not utils.checkConditions(obj.user, self._conds):
                     return utils.lookup.render("role_error", page=obj)
             
             try:
@@ -73,10 +73,10 @@ class Expose(AbstractDecorator):
                 if not isinstance(result, dict):
                     return result
                 result.update(self._kwa)
-                uri = obj.path_info if (self._uri is None) else self._uri
+                uri = obj.pathInfo if (self._uri is None) else self._uri
                 return utils.lookup.render(uri, **result)
             except Exception, e:
-                print u"%s Error: %s" % (obj.path_info, e)
+                print u"%s Error: %s" % (obj.pathInfo, e)
                 return utils.lookup.render("basic_error", page=obj)
         
         wrapper.exposed = True
