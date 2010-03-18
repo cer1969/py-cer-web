@@ -68,16 +68,16 @@ class Expose(AbstractDecorator):
                 if not utils.checkConditions(obj.user, self._conds):
                     return utils.lookup.render("role_error", page=obj)
             
-            try:
-                result = func(obj, *args, **kwargs)
-                if not isinstance(result, dict):
-                    return result
-                result.update(self._kwa)
-                uri = obj.pathInfo if (self._uri is None) else self._uri
-                return utils.lookup.render(uri, **result)
-            except Exception, e:
-                print u"%s Error: %s" % (obj.pathInfo, e)
-                return utils.lookup.render("basic_error", page=obj)
+            #try:
+            result = func(obj, *args, **kwargs)
+            if not isinstance(result, dict):
+                return result
+            result.update(self._kwa)
+            uri = obj.pathInfo if (self._uri is None) else self._uri
+            return utils.lookup.render(uri, **result)
+            #except Exception, e:
+            #    print u"%s Error: %s" % (obj.pathInfo, e)
+            #    return utils.lookup.render("basic_error", page=obj)
         
         wrapper.exposed = True
         return wrapper
