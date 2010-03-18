@@ -6,7 +6,14 @@ import utils
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['AbstractDecorator', 'AbstractExpose', 'Expose', 'JsonExpose']
+__all__ = ['cpexpose', 'HTTPRedirect', 'AbstractDecorator', 'AbstractExpose', 'Expose',
+           'JsonExpose']
+
+#-----------------------------------------------------------------------------------------
+# Alias de cherrypy
+
+cpexpose = cherrypy.expose
+HTTPRedirect = cherrypy.HTTPRedirect
 
 #-----------------------------------------------------------------------------------------
 
@@ -120,29 +127,25 @@ class JsonExpose(AbstractExpose):
     """
     
     def verbsError(self, obj):
-        msg = u"%s Error de método: %s" % (obj.pathInfo, cherrypy.request.method)
-        print msg
-        return utils.toJson(json_ok=False, json_err=u"VERBS", json_msg=msg)
+        print u"%s Error de método: %s" % (obj.pathInfo, cherrypy.request.method)
+        return utils.toJson(json_ok=False, json_err=u"VERBS")
     
     def loginError(self, obj):
-        msg = u"%s Error: Login requerido" % obj.pathInfo
-        print msg
-        return utils.toJson(json_ok=False, json_err=u"LOGIN", json_msg=msg)
+        print u"%s Error: Login requerido" % obj.pathInfo
+        return utils.toJson(json_ok=False, json_err=u"LOGIN")
     
     def roleError(self, obj):
-        msg = u"%s Error: Restricción de usuario" % obj.pathInfo
-        print msg
-        return utils.toJson(json_ok=False, json_err=u"ROLE", json_msg=msg)
+        print u"%s Error: Restricción de usuario" % obj.pathInfo
+        return utils.toJson(json_ok=False, json_err=u"ROLE")
     
     def getResult(self, data, obj):
         try:
-            sal = dict(json_ok=True, json_err=u"", json_msg=u"")
+            sal = dict(json_ok=True, json_err=u"")
             if isinstance(data, dict):
                 sal.update(data)
             else:
                 sal["json_data"] = data
             return utils.toJson(**sal)
         except Exception, e:
-            msg = u"%s Error: %s" % (obj.pathInfo, e)
-            print msg
-            return utils.toJson(json_ok=False, json_err=u"APP", json_msg=msg)
+            print u"%s Error: %s" % (obj.pathInfo, e)
+            return utils.toJson(json_ok=False, json_err=u"APP")
