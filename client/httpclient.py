@@ -25,13 +25,24 @@ class AttrDict(dict):
 
 class HTTPClient(object):
     
-    def __init__(self, host, port):
+    def __init__(self, host, port, checkUrl="/"):
         self.host = host
         self.port = port
         self.home = "http://%s:%d" % (host, port)
+        self.checkUrl = checkUrl
+        self.isonline = False
         
         self.cookie = cookielib.CookieJar()
         self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie))
+        self.check()
+    
+    def check(self):
+        self.isonline = True
+        try:
+            self.get(self.checkUrl)
+        except urllib2.URLError:
+            self.isonline = False
+        return self.isonline
     
     def _fixUrl(self, url):
         return "%s%s" % (self.home, url)
