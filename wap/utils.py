@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
-from mako import exceptions
 from mako.lookup import TemplateLookup
 try:
     import simplejson as json
@@ -30,12 +29,12 @@ class _MakoLookup(object):
                encoding_errors='replace'):
         
         self._lookup = TemplateLookup(directories=[directory],
-            #module_directory='./tmp',
+            #module_directory='./tmp',    # No se puede usar en GAE
             input_encoding=input_encoding,
             output_encoding=output_encoding,
             encoding_errors=encoding_errors
         )
-
+    
     def render(self, uri, **kwa):
         """ Function for templates renderign
         """
@@ -43,14 +42,9 @@ class _MakoLookup(object):
             raise Exception("Lookup is not configured!")
         
         uri = _getUri(uri) + ".tpl"
-        
-        try:
-            tpl = self._lookup.get_template(uri)
-            txt = tpl.render(**kwa)
-            return txt
-        except Exception, e:
-            print exceptions.text_error_template().render()
-            raise e
+        tpl = self._lookup.get_template(uri)
+        txt = tpl.render(**kwa)
+        return txt
 
 #-----------------------------------------------------------------------------------------
 # lookup: _MakoLookup instance

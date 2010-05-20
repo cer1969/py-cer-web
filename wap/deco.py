@@ -6,14 +6,15 @@ import utils
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['cpexpose', 'HTTPRedirect', 'AbstractDecorator', 'AbstractExpose', 'Expose',
-           'JsonExpose']
+__all__ = ['cpexpose', 'HTTPRedirect', 'HTTPError', 'AbstractDecorator', 'AbstractExpose',
+           'Expose', 'JsonExpose']
 
 #-----------------------------------------------------------------------------------------
 # Alias de cherrypy
 
 cpexpose = cherrypy.expose
 HTTPRedirect = cherrypy.HTTPRedirect
+HTTPError = cherrypy.HTTPError
 
 #-----------------------------------------------------------------------------------------
 
@@ -54,33 +55,33 @@ class AbstractExpose(AbstractDecorator):
             else:
                 self._conds.append(auth)
     
-    def verbsError(self, obj):
+    def verbsError(self, page):
         raise NotImplementedError("This is an abstract class")
     
-    def loginError(self, obj):
+    def loginError(self, page):
         raise NotImplementedError("This is an abstract class")
     
-    def roleError(self, obj):
+    def roleError(self, page):
         raise NotImplementedError("This is an abstract class")
     
-    def getResult(self, data, obj):
+    def getResult(self, page, data):
         raise NotImplementedError("This is an abstract class")
     
     def getWrapper(self, func):
-        def wrapper(obj, *args, **kwargs):
+        def wrapper(page, *args, **kwargs):
             
             # verbs check
             if not(cherrypy.request.method in self._verbs):
-                return self.verbsError(obj)
+                return self.verbsError(page)
             
             # auth check
             if self._authreq:
-                if obj.user is None:
-                    return self.loginError(obj)
-                if not utils.checkConditions(obj.user, self._conds):
-                    return self.roleError(obj)
+                if page.user is None:
+                    return self.loginError(page)
+                if not utils.checkConditions(page.user, self._conds):
+                    return self.roleError(page)
             
-            return self.getResult(func(obj, *args, **kwargs), obj)
+            return self.getResult(page, func(page, *args, **kwargs))
         
         wrapper.exposed = True
         return wrapper
@@ -92,7 +93,7 @@ class Expose(AbstractExpose):
         optional authentication.
         The instance with de decorated method must have:
         - Attributes: user and pathInfo
-        - Templates: basic_error, login and role_error
+        - Templates: error_basic, error_login, error_role, error_post
     """
     
     def __init__(self, verbs="GET,POST", auth=None, uri=None, **kwa):
@@ -100,21 +101,26 @@ class Expose(AbstractExpose):
         self._uri = uri
         self._kwa = kwa
     
-    def verbsError(self, obj):
-        print u"%s Error de método: %s" % (obj.pathInfo, cherrypy.request.method)
-        return utils.lookup.render("basic_error", page=obj)
+    def _doErr(self, page, tpl, msg):
+        if cherrypy.request.method == "GET":
+            return utils.lookup.render(tpl, page=page)
+        else:
+            return utils.lookup.render("error_post", page=page, msg=msg)
     
-    def loginError(self, obj):
-        return utils.lookup.render("login", page=obj)
+    def verbsError(self, page):
+        return self._doErr(page, "error_basic", u"ERROR DE ACCESO")
     
-    def roleError(self, obj):
-        return utils.lookup.render("role_error", page=obj)
+    def loginError(self, page):
+        return self._doErr(page, "error_login", u"INICIO DE SESIÓN REQUERIDO")
     
-    def getResult(self, data, obj):
+    def roleError(self, page):
+        return self._doErr(page, "error_role", u"NO TIENE PRIVILEGIOS SUFICIENTES")
+    
+    def getResult(self, page, data):
         if not isinstance(data, dict):
             return data
         data.update(self._kwa)
-        uri = obj.pathInfo if (self._uri is None) else self._uri
+        uri = page.pathInfo if (self._uri is None) else self._uri
         return utils.lookup.render(uri, **data)
 
 
@@ -126,19 +132,19 @@ class JsonExpose(AbstractExpose):
         - Attributes: user and pathInfo
     """
     
-    def verbsError(self, obj):
-        print u"%s Error de método: %s" % (obj.pathInfo, cherrypy.request.method)
-        return utils.toJson(json_ok=False, json_err=u"VERBS")
+    def _doErr(self, err, msg):
+        return utils.toJson(json_ok=False, json_err=err, msg=msg)
     
-    def loginError(self, obj):
-        print u"%s Error: Login requerido" % obj.pathInfo
-        return utils.toJson(json_ok=False, json_err=u"LOGIN")
+    def verbsError(self, page):
+        return self._doErr(u"VERBS", u"ERROR DE ACCESOs")
     
-    def roleError(self, obj):
-        print u"%s Error: Restricción de usuario" % obj.pathInfo
-        return utils.toJson(json_ok=False, json_err=u"ROLE")
+    def loginError(self, page):
+        return self._doErr(u"LOGIN", u"INICIO DE SESIÓN REQUERIDO")
     
-    def getResult(self, data, obj):
+    def roleError(self, page):
+        return self._doErr(u"ROLE", u"NO TIENE PRIVILEGIOS SUFICIENTES")
+    
+    def getResult(self, page, data):
         try:
             sal = dict(json_ok=True, json_err=u"")
             if isinstance(data, dict):
@@ -146,6 +152,5 @@ class JsonExpose(AbstractExpose):
             else:
                 sal["json_data"] = data
             return utils.toJson(**sal)
-        except Exception, e:
-            print u"%s Error: %s" % (obj.pathInfo, e)
+        except Exception:
             return utils.toJson(json_ok=False, json_err=u"APP")
