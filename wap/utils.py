@@ -9,7 +9,7 @@ except ImportError:
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'checkConditions', 'toJson']
+__all__ = ['lookup', 'toJson']
 
 #-----------------------------------------------------------------------------------------
 
@@ -50,17 +50,6 @@ class _MakoLookup(object):
 # lookup: _MakoLookup instance
 
 lookup = _MakoLookup()
-
-#-----------------------------------------------------------------------------------------
-# check conditions
-
-def checkConditions(user, conditions):
-    """user and conditions must be implemented by developers
-    """
-    for func in conditions:
-        if not func(user):
-            return False
-    return True
 
 #-----------------------------------------------------------------------------------------
 # simplejson

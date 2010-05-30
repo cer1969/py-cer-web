@@ -9,66 +9,50 @@ __all__ = ['Page']
 
 #-----------------------------------------------------------------------------------------
 
-SESSION_GLOBAL_USER = "_session_global_user"
-
 class Page(object):
     """ Abstract base class for page handlers
     """
     
+    redirect = cherrypy.HTTPRedirect
+    httperror = cherrypy.HTTPError
+    
     def __init__(self, url="/"):
         self.url = url
     
-    def _getPathInfo(self):
-        return cherrypy.request.path_info
+    def _getRequest(self):
+        return cherrypy.request
+    request = property(_getRequest)    
     
-    pathInfo = property(_getPathInfo)
-    
-    def _setUser(self, user):
-        # Set current user
-        self.setSession(SESSION_GLOBAL_USER, user)
-    
-    def _getUser(self):
-        # Get current user
-        return self.getSession(SESSION_GLOBAL_USER)
-    
-    user = property(_getUser, _setUser)
-    
-    def _getDb(self):
-        return cherrypy.thread_data.db
-    
-    db = property(_getDb)
+    def _getResponse(self):
+        return cherrypy.response
+    response = property(_getResponse)
     
     #-------------------------------------------------------------------------------------
-    # Cookies and Sessions
     
-    def getCookie(self, name, default=None):
-        cook = cherrypy.request.cookie.get(name)
-        value = default if (cook is None) else cook.value
-        return value
+    def checkUser(self, conditions):
+        """Check if self.user fullfill the conditions.
+           Return True if all pass and False if at least one fails.
+           User and conditions must be implemented by developers
+        """
+        for func in conditions:
+            if not func(self.user):
+                return False
+        return True
     
-    def setCookie(self, name, value, maxage=None, url=None):
-        cook = cherrypy.response.cookie
-        cook[name] = value
-        if maxage:
-            cook[name]['max-age'] = maxage
-        url = self.url if (url is None) else url
-        cook[name]['path'] = url
+    def getUser(self):
+        """Must return the current user, None or raise AttributeError
+        """
+        raise AttributeError("can't get attribute 'user'")
     
-    def setSession(self, key, value):
-        # Graba información de sessión global
-        cherrypy.session[key] = value
+    def _getUser(self):
+        return self.getUser()
     
-    def getSession(self, key, default=None):
-        # Recupera información de sessión global
-        return cherrypy.session.get(key, default)
+    def setUser(self, user):
+        """Must set the current or raise AttributeError
+        """
+        raise AttributeError("can't set attribute 'user'")
     
-    def setPageData(self, key, value):
-        # Graba información de sessión asociada a esta página
-        gs = self.getSession(self.url, {})
-        gs[key] = value
-        self.setSession(self.url, gs)
+    def _setUser(self, user):
+        self.setUser(user)
     
-    def getPageData(self, key, default=None):
-        # Recupera información de sessión asociada a esta página
-        gs = self.getSession(self.url, {})
-        return gs.get(key, default)
+    user = property(_getUser, _setUser)
