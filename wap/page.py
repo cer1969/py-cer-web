@@ -29,8 +29,14 @@ class Page(object):
     
     #-------------------------------------------------------------------------------------
     
-    def checkUser(self, conditions):
-        """Check if self.user fullfill the conditions.
+    def checkUser(self):
+        """Must return True if a valid user is logedin, False otherwise.
+           Can be overwritted for special user requirements. 
+        """
+        return not (self.user is None)
+    
+    def checkAuth(self, conditions):
+        """Check if self.user fullfill the auth conditions.
            Return True if all pass and False if at least one fails.
            User and conditions must be implemented by developers
         """
