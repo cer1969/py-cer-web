@@ -83,7 +83,7 @@ class JsonExpose(Expose):
     
     def render(self, fout, uri=None, **kwa):
         fout.update(kwa)
-        fout.update(ok=True, err="", msg="")
+        fout.update(ok=True, err="")
         return utils.toJson(**fout)
 
 #-----------------------------------------------------------------------------------------
