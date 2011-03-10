@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
-import utils
+try:
+    import simplejson as json
+except ImportError:
+    import json
+from utils import lookup
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['Expose', 'RawExpose', 'JsonExpose', 'JsonRender']
+__all__ = ['json', 'Expose', 'RawExpose', 'JsonExpose', 'JsonRender']
 
 #-----------------------------------------------------------------------------------------
 
@@ -60,7 +64,7 @@ class Expose(object):
     
     def render(self, fout, uri=None, **kwa):
         fout.update(kwa)
-        return utils.lookup.render(uri, **fout)
+        return lookup.render(uri, **fout)
 
 #-----------------------------------------------------------------------------------------
 
@@ -79,12 +83,12 @@ class JsonExpose(Expose):
     
     def error(self, page, err):
         sal = dict(ok=False, err=err.name, msg=err.message)
-        return utils.toJson(**sal)
+        return json.dumps(sal)
     
     def render(self, fout, uri=None, **kwa):
         fout.update(kwa)
         fout.update(ok=True, err="")
-        return utils.toJson(**fout)
+        return json.dumps(fout)
 
 #-----------------------------------------------------------------------------------------
 
@@ -100,14 +104,14 @@ class JsonRender(Expose):
         
         data = u"[ERROR: %s]" % err.name
         if self.inline is False:
-            data=utils.lookup.render(err.template, **{"page": page})
+            data=lookup.render(err.template, **{"page": page})
         
         sal = dict(ok=False, err=err.name, msg=err.message, cache=cache, data=data)
-        return utils.toJson(**sal)
+        return json.dumps(sal)
     
     def render(self, fout, uri=None, **kwa):
         fout.update(kwa)
         sal = dict(ok=True, err="", msg="", cache=self.cache, 
-            data=utils.lookup.render(uri, **fout)
+            data=lookup.render(uri, **fout)
         )
-        return utils.toJson(**sal)
+        return json.dumps(sal)

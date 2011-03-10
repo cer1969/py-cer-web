@@ -2,14 +2,10 @@
 # CRISTIAN ECHEVERRÍA RABÍ
 
 from mako.lookup import TemplateLookup
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['lookup', 'toJson']
+__all__ = ['lookup']
 
 #-----------------------------------------------------------------------------------------
 
@@ -50,9 +46,3 @@ class _MakoLookup(object):
 # lookup: _MakoLookup instance
 
 lookup = _MakoLookup()
-
-#-----------------------------------------------------------------------------------------
-# simplejson
-
-def toJson(**kwargs):
-    return json.dumps(kwargs)

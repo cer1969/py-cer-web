@@ -11,13 +11,21 @@ __all__ = ['Page']
 
 class Page(object):
     """ Abstract base class for page handlers
+        Si se usa con GAE sessions requiere la siguiente configuración:
+        
+        APP_CONF = {
+            "/": {
+                "tools.sessions.on": True,
+                "tools.sessions.clean_freq": 0,
+                "tools.sessions.persistent": False,
+            },
+        }
+        
     """
     
     redirect = cherrypy.HTTPRedirect
     httperror = cherrypy.HTTPError
     
-    def __init__(self, url="/"):
-        self.url = url
     
     def _getRequest(self):
         return cherrypy.request
@@ -26,6 +34,17 @@ class Page(object):
     def _getResponse(self):
         return cherrypy.response
     response = property(_getResponse)
+    
+    #-------------------------------------------------------------------------------------
+    # Métodos para registro de valores en la session actual
+    
+    def setSession(self, key, value):
+        # Graba información de sessión global
+        cherrypy.session[key] = value
+    
+    def getSession(self, key, default=None):
+        # Recupera información de sessión global
+        return cherrypy.session.get(key, default)
     
     #-------------------------------------------------------------------------------------
     
