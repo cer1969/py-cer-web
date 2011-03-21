@@ -8,6 +8,17 @@ from mako.lookup import TemplateLookup
 __all__ = ['lookup']
 
 #-----------------------------------------------------------------------------------------
+# TODO: Verificar si uri tiene extensión, si no tiene agregar tpl o html
+# 
+# if uri.endswith("/"):
+#     return (uri + "index.html")
+# root, ext = os.path.splitext(uri)
+# if ext == "":
+#     return (uri + ".html")
+# if ext==".":
+#     return root
+# return uri
+#
 
 def _getUri(uri):
     if uri.endswith("/"):

@@ -9,7 +9,7 @@ from utils import lookup
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['json', 'Expose', 'RawExpose', 'JsonExpose', 'JsonRender']
+__all__ = ['BaseExpose', 'Raw', 'Template', 'Json', 'JsonTemplate']
 
 #-----------------------------------------------------------------------------------------
 
@@ -25,7 +25,9 @@ ERROR_VERBS = ErrorData(u"VERBS", "error_basic", u"ERROR DE ACCESO")
 
 #-----------------------------------------------------------------------------------------
 
-class Expose(object):
+class BaseExpose(object):
+    """ Abstract class for decorator that expose methods of wap.Page instances
+    """
     
     def __init__(self, verbs="GET,POST", auth=None, uri=None, **kwa):
         self.verbs = [x.strip().upper() for x in verbs.split(",")]
@@ -60,15 +62,16 @@ class Expose(object):
         return wrapper
     
     def error(self, page, err):
-        return self.render({"page": page}, err.template)
+        raise NotImplementedError("this is an abstract class!")
     
     def render(self, fout, uri=None, **kwa):
-        fout.update(kwa)
-        return lookup.render(uri, **fout)
+        raise NotImplementedError("this is an abstract class!")
 
 #-----------------------------------------------------------------------------------------
 
-class RawExpose(Expose):
+class Raw(BaseExpose):
+    """ Exposes direct results and permits calls to redirect and httperror
+    """
     
     def error(self, page, err):
         txt = u"%s: %s" % (err.name, err.message)
@@ -79,7 +82,22 @@ class RawExpose(Expose):
 
 #-----------------------------------------------------------------------------------------
 
-class JsonExpose(Expose):
+class Template(BaseExpose):
+    """ Receives dict from methods and returns a proceseced mako templates
+    """
+    
+    def error(self, page, err):
+        return self.render({"page": page}, err.template)
+    
+    def render(self, fout, uri=None, **kwa):
+        fout.update(kwa)
+        return lookup.render(uri, **fout)
+
+#-----------------------------------------------------------------------------------------
+
+class Json(BaseExpose):
+    """ Receives dict from methods and returns json
+    """
     
     def error(self, page, err):
         sal = dict(ok=False, err=err.name, msg=err.message)
@@ -92,26 +110,23 @@ class JsonExpose(Expose):
 
 #-----------------------------------------------------------------------------------------
 
-class JsonRender(Expose):
+class JsonTemplate(BaseExpose):
+    """ Receives dict from methods and returns json with proceseced mako templates
+    """
     
-    def __init__(self, verbs="GET,POST", auth=None, uri=None, cache=False, inline=False, **kwa):
-        Expose.__init__(self, verbs, auth, uri, **kwa)
-        self.cache = cache
+    def __init__(self, verbs="GET,POST", auth=None, uri=None, inline=False, **kwa):
+        BaseExpose.__init__(self, verbs, auth, uri, **kwa)
         self.inline = inline
     
     def error(self, page, err):
-        cache = False if err == ERROR_VERBS else True
-        
         data = u"[ERROR: %s]" % err.name
         if self.inline is False:
             data=lookup.render(err.template, **{"page": page})
         
-        sal = dict(ok=False, err=err.name, msg=err.message, cache=cache, data=data)
+        sal = dict(ok=False, err=err.name, msg=err.message, data=data)
         return json.dumps(sal)
     
     def render(self, fout, uri=None, **kwa):
         fout.update(kwa)
-        sal = dict(ok=True, err="", msg="", cache=self.cache, 
-            data=lookup.render(uri, **fout)
-        )
+        sal = dict(ok=True, err="", msg="", data=lookup.render(uri, **fout))
         return json.dumps(sal)
