@@ -3,13 +3,14 @@
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['BaseExpose', 'ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS']
+__all__ = ['BaseExpose', 'ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD']
 
 #-----------------------------------------------------------------------------------------
 
-ERROR_LOGIN = u"LOGIN"
-ERROR_ROLES = u"ROLES"
-ERROR_VERBS = u"VERBS"
+ERROR_LOGIN  = u"LOGIN"   
+ERROR_ROLES  = u"ROLES"
+ERROR_VERBS  = u"VERBS"
+ERROR_METHOD = u"METHOD"    # Error informed by method (not sended by expose classes)
 
 #-----------------------------------------------------------------------------------------
 

@@ -6,19 +6,10 @@ except ImportError:
     import json
 import cherrypy
 from utils import lookup
-from expose import ERROR_LOGIN, ERROR_ROLES, ERROR_VERBS
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['Handler', 'MSGS']
-
-#-----------------------------------------------------------------------------------------
-
-MSGS = {
-    ERROR_LOGIN: u"INICIO DE SESIÓN REQUERIDO",
-    ERROR_ROLES: u"NO TIENE PRIVILEGIOS SUFICIENTES",
-    ERROR_VERBS: u"ERROR DE ACCESO"
-}
+__all__ = ['Handler']
 
 #-----------------------------------------------------------------------------------------
 
@@ -101,37 +92,35 @@ class Handler(object):
     # Métodos llamados por expose decorators para enviar respuestas y errores
     
     def errorRaw(self, err):
-        txt = u"%s: %s" % (err, MSGS[err])
-        raise self.httperror(403, txt.encode("utf-8"))
+        msg = u"ERROR: %s" % err
+        raise self.httperror(403, msg.encode("utf-8"))
     
     def renderRaw(self, fout):
         return fout
     
     def errorTemplate(self, err):
-        return lookup.render("/error_basic", err=err, msg=MSGS[err])
+        return lookup.render("/error_basic", handler=self, err=err)
     
     def renderTemplate(self, fout, uri, **kwa):
         fout.update(kwa)
         return lookup.render(uri, **fout)
     
     def errorJson(self, err):
-        sal = dict(ok=False, err=err, msg=MSGS[err])
-        return json.dumps(sal)
+        return json.dumps(dict(ok=False, err=err))
     
     def renderJson(self, fout, **kwa):
         fout.update(kwa)
-        fout.update(ok=True, err="")
         return json.dumps(fout)
     
     def errorJsonTemplate(self, err, inline):
-        data = u"[ERROR: %s]" % err
+        data = u"ERROR: %s" % err
         if inline is False:
-            data=lookup.render("/error_basic_json", err=err, msg=MSGS[err])
+            data = lookup.render("/error_basic_json", err=err)
         
-        sal = dict(ok=False, err=err, msg=MSGS[err], data=data)
+        sal = dict(ok=False, err=err, data=data)
         return json.dumps(sal)
     
     def renderJsonTemplate(self, fout, uri, **kwa):
         fout.update(kwa)
-        sal = dict(ok=True, err="", msg="", data=lookup.render(uri, **fout))
+        sal = dict(ok=True, err="", data=lookup.render(uri, **fout))
         return json.dumps(sal)
