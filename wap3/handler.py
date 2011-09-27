@@ -91,7 +91,7 @@ class Handler(object):
     #-------------------------------------------------------------------------------------
     # Métodos llamados por expose decorators para enviar errores
     
-    def error(self, err, fmt, **kwa):
+    def error(self, err, fmt):
         if fmt == FMT_RAW:
             return self.errorRaw(err)
         if fmt == FMT_TPL:
@@ -99,53 +99,45 @@ class Handler(object):
         if fmt == FMT_JSON:
             return self.errorJson(err)
         if fmt == FMT_JSONTPL:
-            return self.errorRaw(err, **kwa)
+            return self.errorJsonTemplate(err)
     
     def errorRaw(self, err):
         msg = u"ERROR: %s" % err
         raise self.httperror(403, msg.encode("utf-8"))
-       
+    
     def errorTemplate(self, err):
         return lookup.render("/error_basic", handler=self, err=err)
     
     def errorJson(self, err):
         return json.dumps(dict(ok=False, err=err))
     
-    def errorJsonTemplate(self, err, **kw):
-        data = u"ERROR: %s" % err
-        inline = kw.get("inline", False)
-        
-        if inline is False:
-            data = lookup.render("/error_basic_json", err=err)
-        
+    def errorJsonTemplate(self, err):
+        data = lookup.render("/error_basic_json", err=err)
         sal = dict(ok=False, err=err, data=data)
         return json.dumps(sal)
     
     #-------------------------------------------------------------------------------------
     # Métodos llamados por expose decorators para enviar respuestas
     
-    def render(self, fout, uri, fmt, **kwa):
+    def render(self, fout, uri, fmt):
         if fmt == FMT_RAW:
             return self.renderRaw(fout)
         if fmt == FMT_TPL:
-            return self.renderTemplate(fout, uri, **kwa)
+            return self.renderTemplate(fout, uri)
         if fmt == FMT_JSON:
-            return self.renderJson(fout, **kwa)
+            return self.renderJson(fout)
         if fmt == FMT_JSONTPL:
-            return self.renderJsonTemplate(fout, uri, **kwa)
+            return self.renderJsonTemplate(fout, uri)
     
     def renderRaw(self, fout):
         return fout
     
-    def renderTemplate(self, fout, uri, **kwa):
-        fout.update(kwa)
+    def renderTemplate(self, fout, uri):
         return lookup.render(uri, **fout)
     
-    def renderJson(self, fout, **kwa):
-        fout.update(kwa)
+    def renderJson(self, fout):
         return json.dumps(fout)
     
-    def renderJsonTemplate(self, fout, uri, **kwa):
-        fout.update(kwa)
+    def renderJsonTemplate(self, fout, uri):
         sal = dict(ok=True, err="", data=lookup.render(uri, **fout))
         return json.dumps(sal)
