@@ -5,7 +5,7 @@ try:
 except ImportError:
     import json
 import cherrypy
-from utils import lookup
+from utils import lookup, FMT_RAW, FMT_TPL, FMT_JSON, FMT_JSONTPL
 
 #-----------------------------------------------------------------------------------------
 
@@ -89,38 +89,55 @@ class Handler(object):
     user = property(_getUser, _setUser)
     
     #-------------------------------------------------------------------------------------
-    # Métodos llamados por expose decorators para enviar respuestas y errores
+    # Métodos llamados por expose decorators para enviar errores
+    
+    def error(self, err, fmt):
+        if fmt == FMT_RAW:
+            return self.errorRaw(err) 
+        if fmt == FMT_TPL:
+            return self.errorTemplate(err)
+        if fmt == FMT_JSON:
+            return self.errorJson(err)
+        if fmt == FMT_JSONTPL:
+            return self.errorJsonTemplate(err)
     
     def errorRaw(self, err):
         msg = u"ERROR: %s" % err
         raise self.httperror(403, msg.encode("utf-8"))
     
-    def renderRaw(self, fout):
-        return fout
-    
     def errorTemplate(self, err):
         return lookup.render("/error_basic", handler=self, err=err)
-    
-    def renderTemplate(self, fout, uri, **kwa):
-        fout.update(kwa)
-        return lookup.render(uri, **fout)
     
     def errorJson(self, err):
         return json.dumps(dict(ok=False, err=err))
     
-    def renderJson(self, fout, **kwa):
-        fout.update(kwa)
-        return json.dumps(fout)
-    
-    def errorJsonTemplate(self, err, inline):
-        data = u"ERROR: %s" % err
-        if inline is False:
-            data = lookup.render("/error_basic_json", err=err)
-        
+    def errorJsonTemplate(self, err):
+        data = lookup.render("/error_basic_json", err=err)
         sal = dict(ok=False, err=err, data=data)
         return json.dumps(sal)
     
-    def renderJsonTemplate(self, fout, uri, **kwa):
-        fout.update(kwa)
+    #-------------------------------------------------------------------------------------
+    # Métodos llamados por expose decorators para enviar respuestas
+    
+    def render(self, fout, uri, fmt):
+        if fmt == FMT_RAW:
+            return self.renderRaw(fout)
+        if fmt == FMT_TPL:
+            return self.renderTemplate(fout, uri)
+        if fmt == FMT_JSON:
+            return self.renderJson(fout)
+        if fmt == FMT_JSONTPL:
+            return self.renderJsonTemplate(fout, uri)
+    
+    def renderRaw(self, fout):
+        return fout
+    
+    def renderTemplate(self, fout, uri):
+        return lookup.render(uri, **fout)
+    
+    def renderJson(self, fout):
+        return json.dumps(fout)
+    
+    def renderJsonTemplate(self, fout, uri):
         sal = dict(ok=True, err="", data=lookup.render(uri, **fout))
         return json.dumps(sal)

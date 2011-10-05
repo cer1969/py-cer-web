@@ -93,7 +93,7 @@ class Handler(object):
     
     def error(self, err, fmt):
         if fmt == FMT_RAW:
-            return self.errorRaw(err)
+            return self.errorRaw(err) 
         if fmt == FMT_TPL:
             return self.errorTemplate(err)
         if fmt == FMT_JSON:

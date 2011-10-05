@@ -3,5 +3,4 @@
 
 from utils import *
 import expose
-from expose import *
 from handler import *

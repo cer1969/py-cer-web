@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
+from utils import (ERROR_LOGIN, ERROR_ROLES, ERROR_VERBS,
+                   FMT_RAW, FMT_TPL, FMT_JSON, FMT_JSONTPL)
+
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['BaseExpose', 'ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD']
-
-#-----------------------------------------------------------------------------------------
-
-ERROR_LOGIN  = u"LOGIN"   
-ERROR_ROLES  = u"ROLES"
-ERROR_VERBS  = u"VERBS"
-ERROR_METHOD = u"METHOD"    # Error informed by method (not sended by expose classes)
+__all__ = []
 
 #-----------------------------------------------------------------------------------------
 
@@ -18,11 +14,11 @@ class BaseExpose(object):
     """ Abstract class for decorator that expose methods of wap.Handler instances
     """
     
-    def __init__(self, verbs="GET,POST", auth=None, uri=None, **kwa):
+    def __init__(self, verbs="GET,POST", auth=None, uri=None, fmt=None):
         self.verbs = [x.strip().upper() for x in verbs.split(",")]
         self.auth = auth
         self.uri = uri
-        self.kwa = kwa
+        self.fmt = fmt
     
     def __call__(self, f):
         def wrapper(handler, *args, **kwargs):
@@ -32,76 +28,40 @@ class BaseExpose(object):
                 
                 # check auth login
                 if not handler.checkUser():
-                    return self.error(handler, ERROR_LOGIN)
+                    return handler.error(ERROR_LOGIN, self.fmt)
                 
                 # check auth conditions
                 if not handler.checkAuth(self.auth):
-                    return self.error(handler, ERROR_ROLES)
+                    return handler.error(ERROR_ROLES, self.fmt)
             
             # check verbs
             if not(handler.request.method in self.verbs):
-                return self.error(handler, ERROR_VERBS)
+                return handler.error(ERROR_VERBS, self.fmt)
             
             fout = f(handler, *args, **kwargs)
-            return self.render(handler, fout)
+            uri = handler.request.path_info if (self.uri is None) else self.uri
+            return handler.render(fout, uri, self.fmt)
         
         wrapper.__name__ = f.__name__
         wrapper.exposed = True
         return wrapper
-    
-    def error(self, handler, err):
-        raise NotImplementedError("this is an abstract class!")
-    
-    def render(self, handler, fout):
-        raise NotImplementedError("this is an abstract class!")
+
 
 #-----------------------------------------------------------------------------------------
 
 class Raw(BaseExpose):
-    """ Exposes direct results and permits calls to redirect and httperror
-    """
-    def error(self, handler, err):
-        return handler.errorRaw(err)
-    
-    def render(self, handler, fout):
-        return handler.renderRaw(fout)
-
-#-----------------------------------------------------------------------------------------
+    def __init__(self, verbs="GET,POST", auth=None):
+        super(Raw, self).__init__(verbs, auth, None, FMT_RAW)
 
 class Template(BaseExpose):
-    """ Receives dict from methods and returns a proceseced mako templates
-    """
-    def error(self, handler, err):
-        return handler.errorTemplate(err)
-    
-    def render(self, handler, fout):
-        uri = handler.request.path_info if (self.uri is None) else self.uri
-        return handler.renderTemplate(fout, uri, **self.kwa)
-
-#-----------------------------------------------------------------------------------------
+    def __init__(self, verbs="GET,POST", auth=None, uri=None):
+        super(Template, self).__init__(verbs, auth, uri, FMT_TPL)
 
 class Json(BaseExpose):
-    """ Receives dict from methods and returns json
-    """
-    def error(self, handler, err):
-        return handler.errorJson(err)
-    
-    def render(self, handler, fout):
-        return handler.renderJson(fout, **self.kwa)
-
-#-----------------------------------------------------------------------------------------
+    def __init__(self, verbs="GET,POST", auth=None):
+        super(Json, self).__init__(verbs, auth, None, FMT_JSON)
 
 class JsonTemplate(BaseExpose):
-    """ Receives dict from methods and returns json with proceseced mako templates
-    """
-    def __init__(self, verbs="GET,POST", auth=None, uri=None, inline=False, **kwa):
-        BaseExpose.__init__(self, verbs, auth, uri, **kwa)
-        self.inline = inline
-    
-    def error(self, handler, err):
-        return handler.errorJsonTemplate(err, self.inline)
-    
-    def render(self, handler, fout):
-        uri = handler.request.path_info if (self.uri is None) else self.uri
-        return handler.renderJsonTemplate(fout, uri, **self.kwa)
+    def __init__(self, verbs="GET,POST", auth=None, uri=None):
+        super(JsonTemplate, self).__init__(verbs, auth, uri, FMT_JSONTPL)
     

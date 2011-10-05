@@ -20,20 +20,34 @@ def wap_verbs(verbs, fmt):
 def wap_auth(auth, fmt):
     root = cherrypy.request.app.root
     
+    error = None
+    cherrypy.request._skiprender = False
+    
     # check auth
     if auth is None:
         return
     
     # check auth login
     if not root.checkUser():
-        return root.error(ERROR_LOGIN, fmt)
+        error = ERROR_LOGIN
+        #cherrypy.request._skiprender = True
+        #return root.error(ERROR_LOGIN, fmt)
     
     # check auth conditions
     if not root.checkAuth(auth):
-        return root.error(ERROR_ROLES, fmt)
+        error = ERROR_ROLES
+        #cherrypy.request._skiprender = True
+        #return root.error(ERROR_ROLES, fmt)
+    
+    if not (error is None):
+        cherrypy.request._skiprender = True
+        cherrypy.request.handler = lambda: root.error(error, fmt)
+    
 
 
 def wap_render(uri, fmt):
+    if hasattr(cherrypy.request, "_skiprender") and cherrypy.request._skiprender:
+        return
     root = cherrypy.request.app.root
     uri = cherrypy.request.path_info if (uri is None) else uri
     fout = cherrypy.request.handler()

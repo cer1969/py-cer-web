@@ -6,7 +6,24 @@ from mako.lookup import TemplateLookup
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['MakoLookup', 'lookup']
+__all__ = ['ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD',
+           'FMT_RAW', 'FMT_TPL', 'FMT_JSON', 'FMT_JSONTPL',
+           'lookup']
+
+#-----------------------------------------------------------------------------------------
+# Constantes del módulo
+
+# Valores de Error
+ERROR_LOGIN  = u"LOGIN"
+ERROR_ROLES  = u"ROLES"
+ERROR_VERBS  = u"VERBS"
+ERROR_METHOD = u"METHOD"    # Error informed by method (not sended by expose classes)
+
+# Valores de formato de salida
+FMT_RAW     = u"RAW"
+FMT_TPL     = u"TPL"
+FMT_JSON    = u"JSON"
+FMT_JSONTPL = u"JSONTPL"
 
 #-----------------------------------------------------------------------------------------
 
