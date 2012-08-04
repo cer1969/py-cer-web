@@ -4,3 +4,5 @@
 from utils import *
 import expose
 from handler import *
+
+version = __version__ = "0.2.0"
