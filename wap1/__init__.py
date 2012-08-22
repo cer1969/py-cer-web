@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ 
 
-from handler import *
+from utils import *
+from page import *
 import expose
 
-version = __version__ = "0.3.0"
+version = __version__ = "0.1.0"
