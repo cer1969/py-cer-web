@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+# CRISTIAN ECHEVERRÍA RABÍ
+
+__all__ = ['ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD',
+           'FMT_RAW', 'FMT_TPL', 'FMT_JSON', 'FMT_JSONTPL']
+
+#-----------------------------------------------------------------------------------------
+# Constantes del módulo
+
+# Valores de Error
+ERROR_LOGIN  = 401
+ERROR_ROLES  = 403
+ERROR_VERBS  = 405
+ERROR_METHOD = 500  # Error informed by method (not sended by expose classes)
+
+# Valores de formato de salida
+FMT_RAW     = u"RAW"
+FMT_TPL     = u"TPL"
+FMT_JSON    = u"JSON"
+FMT_JSONTPL = u"JSONTPL"

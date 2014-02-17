@@ -1,29 +1,13 @@
 # -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
-import os, json
+import json
 import cherrypy
+from constants import (FMT_TPL, FMT_JSON, FMT_JSONTPL)
 
 #-----------------------------------------------------------------------------------------
 
-__all__ = ['ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD',
-           'FMT_RAW', 'FMT_TPL', 'FMT_JSON', 'FMT_JSONTPL',
-           'Handler']
-
-#-----------------------------------------------------------------------------------------
-# Constantes del módulo
-
-# Valores de Error
-ERROR_LOGIN  = u"LOGIN"
-ERROR_ROLES  = u"ROLES"
-ERROR_VERBS  = u"VERBS"
-ERROR_METHOD = u"METHOD"    # Error informed by method (not sended by expose classes)
-
-# Valores de formato de salida
-FMT_RAW     = u"RAW"
-FMT_TPL     = u"TPL"
-FMT_JSON    = u"JSON"
-FMT_JSONTPL = u"JSONTPL"
+__all__ = ['Handler']
 
 #-----------------------------------------------------------------------------------------
 
@@ -106,14 +90,13 @@ class Handler(object):
         return self.errorRaw(err)
     
     def errorRaw(self, err):
-        msg = u"ERROR: %s" % err
-        raise self.httperror(403, msg.encode("utf-8"))
+        raise self.httperror(err)
+    
+    def errorJson(self, err):
+        raise self.httperror(err)
     
     def errorTemplate(self, err):
         return self.lookup.render("/error_basic", handler=self, err=err)
-    
-    def errorJson(self, err):
-        return json.dumps(dict(ok=False, err=err))
     
     def errorJsonTemplate(self, err):
         data = self.lookup.render("/error_basic_json", err=err)
@@ -135,11 +118,11 @@ class Handler(object):
     def sendRaw(self, fout):
         return fout
     
-    def sendTemplate(self, uri, fout):
-        return self.lookup.render(uri, **fout)
-    
     def sendJson(self, fout):
         return json.dumps(fout)
+    
+    def sendTemplate(self, uri, fout):
+        return self.lookup.render(uri, **fout)
     
     def sendJsonTemplate(self, uri, fout):
         sal = dict(ok=True, err="", data=self.lookup.render(uri, **fout))
