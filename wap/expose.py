@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
-from constants import (ERROR_LOGIN, ERROR_ROLES, ERROR_VERBS,
+from .constants import (ERROR_LOGIN, ERROR_ROLES, ERROR_VERBS,
                        FMT_RAW, FMT_TPL, FMT_JSON, FMT_JSONTPL)
 
 #-----------------------------------------------------------------------------------------

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
 __all__ = ['ERROR_LOGIN', 'ERROR_ROLES', 'ERROR_VERBS', 'ERROR_METHOD',
@@ -14,7 +13,7 @@ ERROR_VERBS  = 405
 ERROR_METHOD = 500  # Error informed by method (not sended by expose classes)
 
 # Valores de formato de salida
-FMT_RAW     = u"RAW"
-FMT_TPL     = u"TPL"
-FMT_JSON    = u"JSON"
-FMT_JSONTPL = u"JSONTPL"
+FMT_RAW     = "RAW"
+FMT_TPL     = "TPL"
+FMT_JSON    = "JSON"
+FMT_JSONTPL = "JSONTPL"

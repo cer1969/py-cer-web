@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
 import os
@@ -13,8 +12,8 @@ __all__ = ['MakoLookup']
 class MakoLookup(object):
     
     def __init__(self, directories, default_ext="tpl", module_directory=None, 
-                 input_encoding='utf-8', output_encoding='utf-8', 
-                 encoding_errors='replace'):
+                 input_encoding="utf-8", output_encoding="utf-8", 
+                 encoding_errors="replace"):
         
         self._default_ext = default_ext
         

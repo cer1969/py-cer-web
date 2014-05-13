@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 # CRISTIAN ECHEVERRÍA RABÍ
 
 import json
 import cherrypy
-from constants import (FMT_TPL, FMT_JSON, FMT_JSONTPL)
+from .constants import (FMT_TPL, FMT_JSON, FMT_JSONTPL)
 
 #-----------------------------------------------------------------------------------------
 
@@ -28,17 +27,17 @@ class Handler(object):
     redirect = cherrypy.HTTPRedirect
     httperror = cherrypy.HTTPError
     
-    def _getRequest(self):
+    @property
+    def request(self):
         return cherrypy.request
-    request = property(_getRequest)
     
-    def _getResponse(self):
+    @property
+    def response(self):
         return cherrypy.response
-    response = property(_getResponse)
     
-    def _getSession(self):
+    @property
+    def session(self):
         return cherrypy.session
-    session = property(_getSession)
     
     #-------------------------------------------------------------------------------------
     # Métodos para verificación y registro de usuarios
@@ -64,18 +63,18 @@ class Handler(object):
         """
         raise AttributeError("can't get attribute 'user'")
     
-    def _getUser(self):
-        return self.getUser()
-    
     def setUser(self, user):
         """Must set the current or raise AttributeError
         """
         raise AttributeError("can't set attribute 'user'")
     
-    def _setUser(self, user):
-        self.setUser(user)
+    @property
+    def user(self):
+        return self.getUser()
     
-    user = property(_getUser, _setUser)
+    @user.setter
+    def user(self, user):
+        self.setUser(user)
     
     #-------------------------------------------------------------------------------------
     # Métodos llamados por expose decorators para enviar errores
