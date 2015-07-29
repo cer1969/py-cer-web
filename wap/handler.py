@@ -11,15 +11,16 @@ __all__ = ['Handler']
 #-----------------------------------------------------------------------------------------
 
 class Handler(object):
-    """ Abstract base class for request handlers
+    """ Base class for request handlers
         
-        Clases derivadas deben definir los siguientes atributos de clase:
+        Clases que requieran templates deben definir los siguientes atributos de clase:
         lookup: TemplateLookup (por el momento solo MakoLookup)
+                Se requiere un único método lookup.render
     """
     
-    def __init__(self):
-        if not hasattr(self, "lookup"):
-            raise Exception("Class attribute 'lookup' requiered!")
+    #def __init__(self):
+    #    if not hasattr(self, "lookup"):
+    #        raise Exception("Class attribute 'lookup' requiered!")
     
     #-------------------------------------------------------------------------------------
     # Métodos de acceso a cherrypy
